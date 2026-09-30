@@ -1,0 +1,237 @@
+@if (open) {
+  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <!-- Overlay -->
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" (click)="close()"></div>
+
+    <!-- Modal -->
+    <div
+      class="relative z-10 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+      role="dialog"
+      aria-modal="true"
+    >
+      <!-- Header -->
+      <div
+        class="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700"
+          >
+            <lucide-icon [img]="icons.package" [size]="20" [strokeWidth]="1.8" />
+          </div>
+
+          <div>
+            <h2 class="text-base font-semibold text-slate-900 sm:text-lg">
+              {{ isEdit ? 'แก้ไขสินค้า' : 'เพิ่มสินค้า' }}
+            </h2>
+
+            <p class="text-xs text-slate-500">
+              {{ isEdit ? 'แก้ไขข้อมูลสินค้า' : 'เพิ่มสินค้าใหม่เข้าสู่ระบบ' }}
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50"
+          [disabled]="saving()"
+          (click)="close()"
+          aria-label="ปิด"
+        >
+          <lucide-icon [img]="icons.close" [size]="20" [strokeWidth]="1.8" />
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+        @if (error()) {
+          <div
+            class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            {{ error() }}
+          </div>
+        }
+
+        @if (loadingOptions()) {
+          <div class="flex items-center justify-center py-12">
+            <div class="flex items-center gap-3 text-sm text-slate-500">
+              <lucide-icon [img]="icons.loading" [size]="20" class="animate-spin" />
+              กำลังโหลดข้อมูล...
+            </div>
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <!-- Code -->
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700"> รหัสสินค้า </label>
+
+              <input
+                type="text"
+                [ngModel]="form().code"
+                (ngModelChange)="updateField('code', $event)"
+                placeholder="เช่น ST001"
+                class="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              />
+
+              <p class="mt-1 text-xs text-slate-400">ไม่ระบุก็ได้</p>
+            </div>
+
+            <!-- Name -->
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700">
+                ชื่อสินค้า
+                <span class="text-red-500">*</span>
+              </label>
+
+              <input
+                type="text"
+                [ngModel]="form().name"
+                (ngModelChange)="updateField('name', $event)"
+                placeholder="เช่น เหล็กเส้น"
+                [class.border-red-400]="isInvalid('name')"
+                class="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              />
+
+              @if (isInvalid('name')) {
+                <p class="mt-1 text-xs text-red-500">กรุณาระบุชื่อสินค้า</p>
+              }
+            </div>
+
+            <!-- Category -->
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700"> หมวดหมู่ </label>
+
+              <select
+                [ngModel]="form().category_id"
+                (ngModelChange)="updateField('category_id', $event)"
+                class="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              >
+                <option [ngValue]="null">ไม่ระบุหมวดหมู่</option>
+
+                @for (category of categories(); track category.id) {
+                  <option [value]="category.id">
+                    {{ category.name }}
+                  </option>
+                }
+              </select>
+            </div>
+
+            <!-- Unit -->
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700">
+                หน่วยสินค้า
+                <span class="text-red-500">*</span>
+              </label>
+
+              <select
+                [ngModel]="form().unit_id"
+                (ngModelChange)="updateField('unit_id', $event)"
+                [class.border-red-400]="isInvalid('unit_id')"
+                class="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              >
+                <option value="">-- เลือกหน่วยสินค้า --</option>
+
+                @for (unit of units(); track unit.id) {
+                  <option [value]="unit.id">
+                    {{ unit.name }}
+                    @if (unit.code) {
+                      ({{ unit.code }})
+                    }
+                  </option>
+                }
+              </select>
+
+              @if (isInvalid('unit_id')) {
+                <p class="mt-1 text-xs text-red-500">กรุณาเลือกหน่วยสินค้า</p>
+              }
+            </div>
+
+            <!-- Selling Price -->
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700"> ราคาขาย </label>
+
+              <div class="relative">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  [ngModel]="form().selling_price"
+                  (ngModelChange)="updateNumber('selling_price', $event)"
+                  class="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 pr-14 text-right text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+                />
+
+                <span
+                  class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400"
+                >
+                  บาท
+                </span>
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700"> สถานะ </label>
+
+              <label
+                class="flex h-11 cursor-pointer items-center justify-between rounded-xl border border-slate-300 px-3"
+              >
+                <span class="text-sm text-slate-700">
+                  {{ form().is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน' }}
+                </span>
+
+                <input
+                  type="checkbox"
+                  [ngModel]="form().is_active"
+                  (ngModelChange)="updateField('is_active', $event)"
+                  class="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
+                />
+              </label>
+            </div>
+
+            <!-- Description -->
+            <div class="sm:col-span-2">
+              <label class="mb-1.5 block text-sm font-medium text-slate-700"> รายละเอียด </label>
+
+              <textarea
+                rows="4"
+                [ngModel]="form().description"
+                (ngModelChange)="updateField('description', $event)"
+                placeholder="รายละเอียดเพิ่มเติม..."
+                class="w-full resize-none rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              ></textarea>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Footer -->
+      <div
+        class="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end sm:px-6"
+      >
+        <button
+          type="button"
+          [disabled]="saving()"
+          (click)="close()"
+          class="h-11 rounded-xl border border-slate-300 bg-white px-5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          ยกเลิก
+        </button>
+
+        <button
+          type="button"
+          [disabled]="saving() || loadingOptions()"
+          (click)="submit()"
+          class="flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          @if (saving()) {
+            <lucide-icon [img]="icons.loading" [size]="18" class="animate-spin" />
+            กำลังบันทึก...
+          } @else {
+            <lucide-icon [img]="icons.save" [size]="18" />
+            {{ isEdit ? 'บันทึกการแก้ไข' : 'บันทึกสินค้า' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

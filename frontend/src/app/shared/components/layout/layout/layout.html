@@ -1,0 +1,54 @@
+<div class="min-h-screen bg-slate-50">
+  <!-- Sidebar -->
+  <app-sidebar [open]="mobileMenuOpen()" (close)="closeMobileMenu()" />
+
+  <!-- Main -->
+  <main class="min-h-screen lg:pl-72">
+    <!-- Header -->
+    <header
+      class="sticky top-0 z-30 flex h-16 items-center border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6"
+    >
+      <div class="flex w-full items-center justify-between">
+        <!-- Left -->
+        <div class="flex items-center gap-3">
+          <!-- Mobile Menu -->
+          <button
+            type="button"
+            class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 lg:hidden"
+            (click)="toggleMobileMenu()"
+            aria-label="เปิดเมนู"
+          >
+            <lucide-icon [img]="icons.menu" [size]="22" [strokeWidth]="1.8" />
+          </button>
+
+          <!-- Title -->
+          <div>
+            <p class="text-sm font-semibold text-slate-800">ระบบจัดการร้าน</p>
+
+            <p class="hidden text-xs text-slate-500 sm:block">Inventory & Finance</p>
+          </div>
+        </div>
+
+        <!-- User -->
+        <div class="flex items-center gap-3">
+          <div class="hidden text-right sm:block">
+            <p class="text-sm font-medium text-slate-800">ผู้ใช้งาน</p>
+
+            <p class="text-xs text-slate-500">Administrator</p>
+          </div>
+
+          <div
+            class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white"
+          >
+            <lucide-icon [img]="icons.user" [size]="18" [strokeWidth]="1.8" />
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="w-full p-4 sm:p-6 lg:p-8">
+      <router-outlet />
+    </div>
+  </main>
+</div>

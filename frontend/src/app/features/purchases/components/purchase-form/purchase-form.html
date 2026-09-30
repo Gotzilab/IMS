@@ -1,0 +1,287 @@
+<div class="min-h-screen bg-slate-50 p-4 md:p-6">
+  <div class="mx-auto max-w-7xl">
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-slate-800">รับซื้อสินค้า</h1>
+
+      <p class="mt-1 text-sm text-slate-500">บันทึกรายการรับซื้อสินค้าเข้าสต็อก</p>
+    </div>
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="mb-4 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
+        กำลังโหลดข้อมูล...
+      </div>
+    }
+
+    <!-- Success -->
+    @if (successMessage()) {
+      <div
+        class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700"
+      >
+        {{ successMessage() }}
+      </div>
+    }
+
+    <!-- Error -->
+    @if (errorMessage()) {
+      <div class="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <!-- Main Card -->
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <!-- Header -->
+      <div class="border-b border-slate-200 px-5 py-4">
+        <h2 class="font-semibold text-slate-800">ข้อมูลการรับซื้อ</h2>
+      </div>
+
+      <!-- Information -->
+      <div class="grid gap-4 p-5 md:grid-cols-3">
+        <!-- Supplier -->
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700"> ผู้ขาย </label>
+
+          <select
+            [ngModel]="selectedSupplierId()"
+            (ngModelChange)="selectedSupplierId.set($event)"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          >
+            <option [ngValue]="null">ไม่ระบุ</option>
+
+            @for (supplier of suppliers(); track supplier.id) {
+              <option [value]="supplier.id">
+                {{ supplier.name }}
+              </option>
+            }
+          </select>
+        </div>
+
+        <!-- Payment -->
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700"> วิธีชำระเงิน </label>
+
+          <select
+            [ngModel]="selectedPaymentMethodId()"
+            (ngModelChange)="selectedPaymentMethodId.set($event)"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          >
+            <option [ngValue]="null">ไม่ระบุ</option>
+
+            @for (method of paymentMethods(); track method.id) {
+              <option [value]="method.id">
+                {{ method.name }}
+              </option>
+            }
+          </select>
+        </div>
+
+        <!-- Note -->
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700"> หมายเหตุ </label>
+
+          <input
+            type="text"
+            [ngModel]="note()"
+            (ngModelChange)="note.set($event)"
+            placeholder="หมายเหตุเพิ่มเติม"
+            class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          />
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="border-t border-slate-200">
+        <div class="flex items-center justify-between px-5 py-4">
+          <div>
+            <h2 class="font-semibold text-slate-800">รายการสินค้า</h2>
+
+            <p class="mt-1 text-xs text-slate-500">เพิ่มสินค้าที่รับซื้อเข้าสต็อก</p>
+          </div>
+
+          <button
+            type="button"
+            (click)="addItem()"
+            class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700"
+          >
+            + เพิ่มสินค้า
+          </button>
+        </div>
+
+        <!-- Empty -->
+        @if (items().length === 0) {
+          <div class="mx-5 mb-5 rounded-xl border border-dashed border-slate-300 p-10 text-center">
+            <p class="text-sm text-slate-500">ยังไม่มีรายการสินค้า</p>
+
+            <button
+              type="button"
+              (click)="addItem()"
+              class="mt-3 text-sm font-medium text-blue-600 hover:text-blue-700"
+            >
+              + เพิ่มรายการแรก
+            </button>
+          </div>
+        }
+
+        <!-- Table -->
+        @if (items().length > 0) {
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[900px]">
+              <thead class="border-y border-slate-200 bg-slate-50">
+                <tr>
+                  <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500">สินค้า</th>
+
+                  <th class="w-36 px-3 py-3 text-right text-xs font-semibold text-slate-500">
+                    จำนวน
+                  </th>
+
+                  <th class="w-40 px-3 py-3 text-right text-xs font-semibold text-slate-500">
+                    ราคาซื้อ / หน่วย
+                  </th>
+
+                  <th class="w-40 px-3 py-3 text-right text-xs font-semibold text-slate-500">
+                    รวม
+                  </th>
+
+                  <th class="w-16"></th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (item of items(); track $index) {
+                  <tr class="border-b border-slate-100">
+                    <!-- Product -->
+                    <td class="px-5 py-3">
+                      <select
+                        [ngModel]="item.product_id"
+                        (ngModelChange)="onProductChange($index, $event)"
+                        class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+                      >
+                        <option value="">เลือกสินค้า</option>
+
+                        @for (product of products(); track product.id) {
+                          <option [value]="product.id">
+                            {{ product.name }}
+                            @if (product.unit) {
+                              ({{ product.unit.name }})
+                            }
+                          </option>
+                        }
+                      </select>
+                    </td>
+
+                    <!-- Quantity -->
+                    <td class="px-3 py-3">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.001"
+                        [ngModel]="item.quantity"
+                        (ngModelChange)="updateQuantity($index, $event)"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-right text-sm outline-none focus:border-blue-500"
+                      />
+                    </td>
+
+                    <!-- Unit Price -->
+                    <td class="px-3 py-3">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        [ngModel]="item.unit_price"
+                        (ngModelChange)="updateUnitPrice($index, $event)"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-right text-sm outline-none focus:border-blue-500"
+                      />
+                    </td>
+
+                    <!-- Total -->
+                    <td class="px-3 py-3 text-right font-semibold text-slate-800">
+                      {{ formatCurrency(getItemTotal(item)) }}
+                    </td>
+
+                    <!-- Remove -->
+                    <td class="px-3 py-3">
+                      <button
+                        type="button"
+                        (click)="removeItem($index)"
+                        class="rounded-lg p-2 text-red-500 hover:bg-red-50"
+                        title="ลบรายการ"
+                      >
+                        ✕
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+
+      <!-- Summary -->
+      <div class="border-t border-slate-200 bg-slate-50 p-5">
+        <div class="ml-auto max-w-md space-y-3">
+          <div class="flex justify-between text-sm text-slate-600">
+            <span> ยอดรวม </span>
+
+            <span class="font-medium">
+              {{ formatCurrency(getSubtotal()) }}
+            </span>
+          </div>
+
+          <!-- Discount -->
+          <div class="flex items-center justify-between gap-4">
+            <span class="text-sm text-slate-600"> ส่วนลด </span>
+
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              [ngModel]="discount()"
+              (ngModelChange)="updateDiscount($event)"
+              class="w-36 rounded-lg border border-slate-300 bg-white px-3 py-2 text-right text-sm outline-none focus:border-blue-500"
+            />
+          </div>
+
+          <div class="border-t border-slate-200 pt-3">
+            <div class="flex items-center justify-between">
+              <span class="font-semibold text-slate-800"> รวมทั้งสิ้น </span>
+
+              <span class="text-2xl font-bold text-blue-600">
+                {{ formatCurrency(getTotal()) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div
+        class="flex flex-col-reverse gap-3 border-t border-slate-200 p-5 sm:flex-row sm:justify-end"
+      >
+        <button
+          type="button"
+          (click)="resetForm()"
+          [disabled]="saving()"
+          class="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+        >
+          ล้างข้อมูล
+        </button>
+
+        <button
+          type="button"
+          (click)="save()"
+          [disabled]="saving() || loading() || !canSave()"
+          class="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          @if (saving()) {
+            กำลังบันทึก...
+          } @else {
+            บันทึกรับซื้อ
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,199 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900">Dashboards</h1>
+
+    <p class="mt-1 text-sm text-slate-500">ภาพรวมระบบจัดการสินค้า สต็อก การรับซื้อ และการขาย</p>
+  </div>
+
+  <!-- Error -->
+  @if (error()) {
+    <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ error() }}
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      @for (item of [1, 2, 3, 4]; track item) {
+        <div class="h-32 animate-pulse rounded-2xl bg-slate-100"></div>
+      }
+    </div>
+  } @else {
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <!-- Products -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500">สินค้าทั้งหมด</p>
+
+            <p class="mt-2 text-3xl font-bold text-slate-900">
+              {{ summary().totalProducts | number }}
+            </p>
+
+            <p class="mt-2 text-xs text-slate-500">รายการสินค้า</p>
+          </div>
+
+          <div
+            class="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-700"
+          >
+            <lucide-icon [img]="icons.boxes" [size]="22" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Stock Value -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500">มูลค่าสต็อก</p>
+
+            <p class="mt-2 text-2xl font-bold text-slate-900">
+              ฿{{ formatCurrency(summary().totalStockValue) }}
+            </p>
+
+            <p class="mt-2 text-xs text-slate-500">ราคาทุนโดยประมาณ</p>
+          </div>
+
+          <div
+            class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600"
+          >
+            <lucide-icon [img]="icons.wallet" [size]="22" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchase -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500">รับซื้อเดือนนี้</p>
+
+            <p class="mt-2 truncate text-xl font-bold text-slate-900 sm:text-2xl">
+              ฿{{ formatCurrency(summary().purchaseAmount) }}
+            </p>
+
+            <p class="mt-2 text-xs text-slate-500">ยอดรับซื้อ</p>
+          </div>
+
+          <div
+            class="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-orange-600"
+          >
+            <lucide-icon [img]="icons.purchase" [size]="22" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500">ขายเดือนนี้</p>
+
+            <p class="mt-2 text-2xl font-bold text-slate-900">
+              ฿{{ formatCurrency(summary().salesAmount) }}
+            </p>
+
+            <p class="mt-2 text-xs text-slate-500">ยอดขาย</p>
+          </div>
+
+          <div
+            class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"
+          >
+            <lucide-icon [img]="icons.sale" [size]="22" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Second Row -->
+    <div class="grid gap-6 lg:grid-cols-3">
+      <!-- Low Stock -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="font-semibold text-slate-900">สินค้าใกล้หมด</h2>
+
+            <p class="mt-1 text-xs text-slate-500">สินค้าที่มีจำนวนคงเหลือไม่เกิน 5</p>
+          </div>
+
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-600">
+            <lucide-icon [img]="icons.alert" [size]="20" />
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <p class="text-4xl font-bold text-slate-900">
+            {{ summary().lowStockProducts }}
+          </p>
+
+          <p class="mt-1 text-sm text-slate-500">รายการ</p>
+        </div>
+      </div>
+
+      <!-- Income -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"
+          >
+            <lucide-icon [img]="icons.sale" [size]="20" />
+          </div>
+
+          <div>
+            <h2 class="font-semibold text-slate-900">รายรับ</h2>
+
+            <p class="text-xs text-slate-500">เดือนนี้</p>
+          </div>
+        </div>
+
+        <p class="mt-6 text-3xl font-bold text-emerald-600">
+          ฿{{ formatCurrency(summary().salesAmount) }}
+        </p>
+      </div>
+
+      <!-- Expense -->
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-orange-600"
+          >
+            <lucide-icon [img]="icons.purchase" [size]="20" />
+          </div>
+
+          <div>
+            <h2 class="font-semibold text-slate-900">รายจ่าย</h2>
+
+            <p class="text-xs text-slate-500">เดือนนี้</p>
+          </div>
+        </div>
+
+        <p class="mt-6 text-3xl font-bold text-orange-600">
+          ฿{{ formatCurrency(summary().purchaseAmount) }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Welcome / Next -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div class="flex items-start gap-4">
+        <div
+          class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white"
+        >
+          <lucide-icon [img]="icons.package" [size]="24" />
+        </div>
+
+        <div>
+          <h2 class="font-semibold text-slate-900">ระบบพร้อมใช้งาน</h2>
+
+          <p class="mt-1 text-sm leading-6 text-slate-500">
+            ขั้นตอนถัดไปเราจะเชื่อมหน้าสินค้าเข้ากับ Supabase เพื่อจัดการสินค้า สต็อก ราคาทุน
+            และราคาขาย จากข้อมูลจริง
+          </p>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,411 @@
+<div class="space-y-6">
+  <!-- ========================================== -->
+  <!-- Header -->
+  <!-- ========================================== -->
+
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">สินค้า</h1>
+
+      <p class="mt-1 text-sm text-slate-500">จัดการสินค้าและสต็อก</p>
+    </div>
+
+    <button
+      type="button"
+      class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 sm:w-auto"
+      (click)="addProduct()"
+    >
+      <lucide-icon [img]="icons.plus" [size]="18" [strokeWidth]="2" />
+
+      เพิ่มสินค้า
+    </button>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- Error -->
+  <!-- ========================================== -->
+
+  @if (error()) {
+    <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ error() }}
+    </div>
+  }
+
+  <!-- ========================================== -->
+  <!-- Statistics -->
+  <!-- ========================================== -->
+
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <!-- Total -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-slate-500">สินค้าทั้งหมด</p>
+
+          @if (loading()) {
+            <div class="mt-2 h-8 w-16 animate-pulse rounded bg-slate-100"></div>
+          } @else {
+            <p class="mt-2 text-3xl font-bold text-slate-900">
+              {{ totalProducts() }}
+            </p>
+          }
+        </div>
+
+        <div
+          class="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-700"
+        >
+          <lucide-icon [img]="icons.boxes" [size]="22" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-slate-500">มีสต็อก</p>
+
+          @if (loading()) {
+            <div class="mt-2 h-8 w-16 animate-pulse rounded bg-slate-100"></div>
+          } @else {
+            <p class="mt-2 text-3xl font-bold text-emerald-600">
+              {{ stockedProducts() }}
+            </p>
+          }
+        </div>
+
+        <div
+          class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"
+        >
+          <lucide-icon [img]="icons.package" [size]="22" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Low Stock -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-slate-500">สต็อกใกล้หมด</p>
+
+          @if (loading()) {
+            <div class="mt-2 h-8 w-16 animate-pulse rounded bg-slate-100"></div>
+          } @else {
+            <p class="mt-2 text-3xl font-bold text-orange-600">
+              {{ lowStockProducts() }}
+            </p>
+          }
+        </div>
+
+        <div
+          class="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-orange-600"
+        >
+          <lucide-icon [img]="icons.alert" [size]="22" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- Filters -->
+  <!-- ========================================== -->
+
+  <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex flex-col gap-3 lg:flex-row">
+      <!-- Search -->
+      <div class="relative flex-1">
+        <div
+          class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"
+        >
+          <lucide-icon [img]="icons.search" [size]="18" />
+        </div>
+
+        <input
+          type="text"
+          placeholder="ค้นหาชื่อสินค้า หรือรหัสสินค้า..."
+          class="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
+          [value]="searchText()"
+          (input)="onSearch($any($event.target).value)"
+        />
+      </div>
+
+      <!-- Category -->
+      <select
+        class="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 lg:w-64"
+        [value]="selectedCategory()"
+        (change)="onCategoryChange($any($event.target).value)"
+      >
+        <option value="">ทุกหมวดหมู่</option>
+
+        @for (category of categories(); track category.id) {
+          <option [value]="category.id">
+            {{ category.name }}
+          </option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- Product Table -->
+  <!-- ========================================== -->
+
+  <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <!-- Desktop Table -->
+    <div class="hidden overflow-x-auto md:block">
+      <table class="w-full min-w-[900px]">
+        <thead class="border-b border-slate-200 bg-slate-50">
+          <tr>
+            <th
+              class="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+            >
+              สินค้า
+            </th>
+
+            <th
+              class="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+            >
+              หมวดหมู่
+            </th>
+
+            <th
+              class="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+            >
+              หน่วย
+            </th>
+
+            <th
+              class="px-5 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500"
+            >
+              คงเหลือ
+            </th>
+
+            <th
+              class="px-5 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500"
+            >
+              ราคาทุน
+            </th>
+
+            <th
+              class="px-5 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500"
+            >
+              ราคาขาย
+            </th>
+
+            <th
+              class="px-5 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500"
+            >
+              จัดการ
+            </th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-100">
+          @if (loading()) {
+            @for (item of [1, 2, 3, 4, 5]; track item) {
+              <tr>
+                <td colspan="7" class="px-5 py-5">
+                  <div class="h-5 w-full animate-pulse rounded bg-slate-100"></div>
+                </td>
+              </tr>
+            }
+          } @else if (filteredProducts().length === 0) {
+            <tr>
+              <td colspan="7" class="px-5 py-12 text-center">
+                <div class="flex flex-col items-center justify-center">
+                  <div
+                    class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-400"
+                  >
+                    <lucide-icon [img]="icons.package" [size]="24" />
+                  </div>
+
+                  <p class="mt-3 text-sm font-medium text-slate-700">ไม่พบสินค้า</p>
+
+                  <p class="mt-1 text-xs text-slate-400">ลองเปลี่ยนคำค้นหาหรือหมวดหมู่</p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (product of filteredProducts(); track product.id) {
+              <tr class="transition hover:bg-slate-50">
+                <!-- Product -->
+                <td class="px-5 py-4">
+                  <div class="min-w-0">
+                    <p class="truncate font-medium text-slate-800">
+                      {{ product.name }}
+                    </p>
+
+                    <p class="mt-1 text-xs text-slate-400">
+                      {{ product.code || '-' }}
+                    </p>
+                  </div>
+                </td>
+
+                <!-- Category -->
+                <td class="px-5 py-4">
+                  <span class="text-sm text-slate-600">
+                    {{ product.category?.name || '-' }}
+                  </span>
+                </td>
+
+                <!-- Unit -->
+                <td class="px-5 py-4">
+                  <span class="text-sm text-slate-600">
+                    {{ product.unit?.name || '-' }}
+                  </span>
+                </td>
+
+                <!-- Stock -->
+                <td class="px-5 py-4 text-right">
+                  <div class="flex flex-col items-end">
+                    <span
+                      class="font-semibold"
+                      [class]="getStockClass(Number(product.stock_quantity))"
+                    >
+                      {{ product.stock_quantity | number: '1.0-2' }}
+                    </span>
+
+                    <span class="mt-1 text-xs text-slate-400">
+                      {{ getStockLabel(Number(product.stock_quantity)) }}
+                    </span>
+                  </div>
+                </td>
+
+                <!-- Cost -->
+                <td class="px-5 py-4 text-right">
+                  <span class="text-sm text-slate-700">
+                    ฿{{ formatCurrency(product.average_cost) }}
+                  </span>
+                </td>
+
+                <!-- Selling -->
+                <td class="px-5 py-4 text-right">
+                  <span class="font-medium text-slate-800">
+                    ฿{{ formatCurrency(product.selling_price) }}
+                  </span>
+                </td>
+
+                <!-- Actions -->
+                <td class="px-5 py-4">
+                  <div class="flex justify-center">
+                    <button
+                      type="button"
+                      class="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                      (click)="editProduct(product)"
+                    >
+                      <lucide-icon [img]="icons.edit" [size]="17" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- Mobile Cards -->
+    <!-- ========================================== -->
+
+    <div class="divide-y divide-slate-100 md:hidden">
+      @if (loading()) {
+        @for (item of [1, 2, 3]; track item) {
+          <div class="p-4">
+            <div class="h-20 animate-pulse rounded-xl bg-slate-100"></div>
+          </div>
+        }
+      } @else if (filteredProducts().length === 0) {
+        <div class="px-5 py-12 text-center">
+          <div
+            class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-400"
+          >
+            <lucide-icon [img]="icons.package" [size]="24" />
+          </div>
+
+          <p class="mt-3 text-sm font-medium text-slate-700">ไม่พบสินค้า</p>
+        </div>
+      } @else {
+        @for (product of filteredProducts(); track product.id) {
+          <div class="p-4">
+            <div class="flex items-start justify-between gap-3">
+              <!-- Product -->
+              <div class="min-w-0">
+                <p class="truncate font-semibold text-slate-800">
+                  {{ product.name }}
+                </p>
+
+                <p class="mt-1 text-xs text-slate-400">
+                  {{ product.code || '-' }}
+                </p>
+
+                <p class="mt-2 text-xs text-slate-500">
+                  {{ product.category?.name || '-' }}
+                  ·
+                  {{ product.unit?.name || '-' }}
+                </p>
+              </div>
+
+              <!-- Action -->
+              <button
+                type="button"
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+                (click)="editProduct(product)"
+              >
+                <lucide-icon [img]="icons.edit" [size]="17" />
+              </button>
+            </div>
+
+            <!-- Data -->
+            <div class="mt-4 grid grid-cols-2 gap-3">
+              <div class="rounded-xl bg-slate-50 p-3">
+                <p class="text-xs text-slate-400">คงเหลือ</p>
+
+                <p
+                  class="mt-1 font-semibold"
+                  [class]="getStockClass(Number(product.stock_quantity))"
+                >
+                  {{ product.stock_quantity | number: '1.0-2' }}
+                  {{ product.unit?.code || '' }}
+                </p>
+              </div>
+
+              <div class="rounded-xl bg-slate-50 p-3">
+                <p class="text-xs text-slate-400">ราคาทุน</p>
+
+                <p class="mt-1 font-semibold text-slate-800">
+                  ฿{{ formatCurrency(product.average_cost) }}
+                </p>
+              </div>
+
+              <div class="rounded-xl bg-slate-50 p-3">
+                <p class="text-xs text-slate-400">ราคาขาย</p>
+
+                <p class="mt-1 font-semibold text-slate-800">
+                  ฿{{ formatCurrency(product.selling_price) }}
+                </p>
+              </div>
+
+              <div class="rounded-xl bg-slate-50 p-3">
+                <p class="text-xs text-slate-400">สถานะ</p>
+
+                <p
+                  class="mt-1 text-sm font-semibold"
+                  [class]="getStockClass(Number(product.stock_quantity))"
+                >
+                  {{ getStockLabel(Number(product.stock_quantity)) }}
+                </p>
+              </div>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>
+<app-product-form-modal
+  [open]="productModalOpen()"
+  [product]="editingProduct()"
+  (closed)="closeProductModal()"
+  (saveRequested)="saveProduct($event)"
+/>

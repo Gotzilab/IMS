@@ -1,0 +1,256 @@
+<!-- ===================================================== -->
+<!-- Desktop Sidebar -->
+<!-- ===================================================== -->
+
+<aside
+  class="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r border-slate-200 bg-white lg:flex"
+>
+  <!-- Logo -->
+  <div class="flex h-16 shrink-0 items-center border-b border-slate-200 px-5">
+    <div
+      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white"
+    >
+      <span class="text-lg font-bold"> R </span>
+    </div>
+
+    <div class="ml-3 min-w-0">
+      <p class="truncate text-sm font-bold text-slate-900">Recycle System</p>
+
+      <p class="truncate text-xs text-slate-500">Inventory & Finance</p>
+    </div>
+  </div>
+
+  <!-- Menu -->
+  <nav class="flex-1 overflow-y-auto px-3 py-4">
+    <div class="space-y-1">
+      @for (item of menuItems; track item.label) {
+        @if (hasChildren(item)) {
+          <!-- Parent -->
+          <button
+            type="button"
+            class="flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+            (click)="toggleMenu(item.label)"
+          >
+            <span class="flex w-6 shrink-0 items-center justify-center">
+              @if (getIcon(item.icon); as icon) {
+                <lucide-icon [img]="icon" [size]="20" [strokeWidth]="1.8" />
+              }
+            </span>
+
+            <span class="ml-3 flex-1 text-left">
+              {{ item.label }}
+            </span>
+
+            <lucide-icon
+              [img]="icons['chevron-down']"
+              [size]="16"
+              [strokeWidth]="1.8"
+              class="transition-transform duration-200"
+              [class.rotate-180]="isExpanded(item.label)"
+            />
+          </button>
+
+          <!-- Children -->
+          @if (isExpanded(item.label)) {
+            <div class="ml-4 space-y-1 border-l border-slate-200 pl-3">
+              @for (child of item.children ?? []; track child.label) {
+                <a
+                  [routerLink]="child.route"
+                  routerLinkActive="bg-slate-100 text-slate-900 font-semibold"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  class="flex items-center rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+                  (click)="closeSidebar()"
+                >
+                  <span class="flex w-5 shrink-0 items-center justify-center">
+                    @if (getIcon(child.icon); as icon) {
+                      <lucide-icon [img]="icon" [size]="17" [strokeWidth]="1.8" />
+                    }
+                  </span>
+
+                  <span class="ml-3 truncate">
+                    {{ child.label }}
+                  </span>
+                </a>
+              }
+            </div>
+          }
+        } @else {
+          <!-- Normal Menu -->
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="bg-slate-900 text-white shadow-sm"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="flex items-center rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+            (click)="closeSidebar()"
+          >
+            <span class="flex w-6 shrink-0 items-center justify-center">
+              @if (getIcon(item.icon); as icon) {
+                <lucide-icon [img]="icon" [size]="20" [strokeWidth]="1.8" />
+              }
+            </span>
+
+            <span class="ml-3 truncate">
+              {{ item.label }}
+            </span>
+          </a>
+        }
+      }
+    </div>
+  </nav>
+
+  <!-- User -->
+  <div class="border-t border-slate-200 p-4">
+    <div class="flex items-center gap-3">
+      <div
+        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-700"
+      >
+        U
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-sm font-medium text-slate-800">ผู้ใช้งาน</p>
+
+        <p class="truncate text-xs text-slate-500">Administrator</p>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ===================================================== -->
+<!-- Mobile Overlay -->
+<!-- ===================================================== -->
+
+@if (open) {
+  <div
+    class="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden"
+    (click)="closeSidebar()"
+  ></div>
+}
+
+<!-- ===================================================== -->
+<!-- Mobile Sidebar -->
+<!-- ===================================================== -->
+
+<aside
+  class="fixed inset-y-0 left-0 z-50 flex w-[85vw] max-w-80 flex-col bg-white shadow-2xl transition-transform duration-300 lg:hidden"
+  [class.translate-x-0]="open"
+  [class.-translate-x-full]="!open"
+>
+  <!-- Mobile Header -->
+  <div class="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 px-5">
+    <div class="flex min-w-0 items-center">
+      <div
+        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white"
+      >
+        <span class="text-lg font-bold"> R </span>
+      </div>
+
+      <div class="ml-3 min-w-0">
+        <p class="truncate text-sm font-bold text-slate-900">Recycle System</p>
+
+        <p class="truncate text-xs text-slate-500">Inventory & Finance</p>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="ml-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+      (click)="closeSidebar()"
+      aria-label="ปิดเมนู"
+    >
+      <lucide-icon [img]="icons.x" [size]="21" [strokeWidth]="1.8" />
+    </button>
+  </div>
+
+  <!-- Mobile Menu -->
+  <nav class="flex-1 overflow-y-auto px-3 py-4">
+    <div class="space-y-1">
+      @for (item of menuItems; track item.label) {
+        @if (hasChildren(item)) {
+          <button
+            type="button"
+            class="flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+            (click)="toggleMenu(item.label)"
+          >
+            <span class="flex w-6 shrink-0 items-center justify-center">
+              @if (getIcon(item.icon); as icon) {
+                <lucide-icon [img]="icon" [size]="20" [strokeWidth]="1.8" />
+              }
+            </span>
+
+            <span class="ml-3 flex-1 text-left">
+              {{ item.label }}
+            </span>
+
+            <lucide-icon
+              [img]="icons['chevron-down']"
+              [size]="16"
+              [strokeWidth]="1.8"
+              class="transition-transform duration-200"
+              [class.rotate-180]="isExpanded(item.label)"
+            />
+          </button>
+
+          @if (isExpanded(item.label)) {
+            <div class="ml-4 space-y-1 border-l border-slate-200 pl-3">
+              @for (child of item.children ?? []; track child.label) {
+                <a
+                  [routerLink]="child.route"
+                  routerLinkActive="bg-slate-100 text-slate-900 font-semibold"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  class="flex items-center rounded-lg px-3 py-2.5 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+                  (click)="closeSidebar()"
+                >
+                  <span class="flex w-5 shrink-0 items-center justify-center">
+                    @if (getIcon(child.icon); as icon) {
+                      <lucide-icon [img]="icon" [size]="17" [strokeWidth]="1.8" />
+                    }
+                  </span>
+
+                  <span class="ml-3 truncate">
+                    {{ child.label }}
+                  </span>
+                </a>
+              }
+            </div>
+          }
+        } @else {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="bg-slate-900 text-white shadow-sm"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="flex items-center rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+            (click)="closeSidebar()"
+          >
+            <span class="flex w-6 shrink-0 items-center justify-center">
+              @if (getIcon(item.icon); as icon) {
+                <lucide-icon [img]="icon" [size]="20" [strokeWidth]="1.8" />
+              }
+            </span>
+
+            <span class="ml-3 truncate">
+              {{ item.label }}
+            </span>
+          </a>
+        }
+      }
+    </div>
+  </nav>
+
+  <!-- Mobile User -->
+  <div class="border-t border-slate-200 p-4">
+    <div class="flex items-center gap-3">
+      <div
+        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-700"
+      >
+        U
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-sm font-medium text-slate-800">ผู้ใช้งาน</p>
+
+        <p class="truncate text-xs text-slate-500">Administrator</p>
+      </div>
+    </div>
+  </div>
+</aside>
